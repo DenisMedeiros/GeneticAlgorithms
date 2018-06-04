@@ -6,8 +6,8 @@ TAM_POP = 30;
 NUM_GER = 40;
 TAXA_CROSS = 0.8;
 TAXA_MUT = 0.001;
-X_MIN = -10;
-X_MAX = 10;
+X_MIN = -500;
+X_MAX = 500;
 QNT_BITS = 10;
 ELITISMO = 0.05;
 DIMENSOES = 2;
@@ -19,6 +19,19 @@ DIMENSOES = 2;
 
 function y = fa(xn)
     y = -(xn(1).^2 + xn(2).^2);
+endfunction
+
+function y = fa(xn)
+    x = xn(1);
+    y = xn(2);
+    z=-x.*sin(sqrt(abs(x)))-y.*sin(sqrt(abs(y)));
+    r = 100*(y-x.^2).^2+(1-x).^2;
+    r1=(y-x.^2).^2+(1-x).^2;
+    w = r .* z;
+    w2 = z - r1;
+    w6 = w + w2;
+    y = -w6;
+    
 endfunction
 
 // ################################################################# //
