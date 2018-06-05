@@ -8,13 +8,13 @@ TAM_POP = 50;
 NUM_GER = 50;
 TAXA_CROSS = 1.0;
 TAXA_MUT = 0.01;
-L_MIN = -20;
-L_MAX = 20;
-QNT_BITS = 16;
+L_MIN = -500;
+L_MAX = 500;
+QNT_BITS = 32;
 ELITISMO = 0.05;
 DIMENSOES = 2;
 
-//RESPOSTA = X perto de 500 e Y perto de -500.
+//RESPOSTA = X perto de 440 e Y perto de -500.
 
 // Função de Avaliação
 //function y = fa(xn)
@@ -25,7 +25,7 @@ DIMENSOES = 2;
 //    y = -(xn(1).^2 + xn(2).^2);
 //endfunction
 
-function saida = plotar()
+function plotar()
     [x, y] = meshgrid(-500:5:500,-500:5:500);
     z = -x.*sin(sqrt(abs(x)))-y.*sin(sqrt(abs(y)));
     x = x/250;
@@ -43,27 +43,29 @@ function saida = plotar()
     surf(x, y, w6);
 endfunction
 
-//// Função de avaliação.
-//function saida = fa(xn)
-//    x = xn(1);
-//    y = xn(2);
-//    z=-x.*sin(sqrt(abs(x)))-y.*sin(sqrt(abs(y)));
-//    r = 100*(y-x.^2).^2+(1-x).^2;
-//    r1=(y-x.^2).^2+(1-x).^2;
-//    w = r .* z;
-//    w2 = z - r1;
-//    w6 = w + w2;
-//    saida = w6;
-//endfunction
-
-
+// Função de avaliação.
 function saida = fa(xn)
     x = xn(1);
     y = xn(2);
-    //z = xn(1) .^2 + xn(2) .^ 2;
-    z = (x - 2).^2 + (y - 8).^2 + 7;
-    saida = -z;
+    z=-x.*sin(sqrt(abs(x)))-y.*sin(sqrt(abs(y)));
+    x = x/250;
+    y = y/250;
+    r = 100*(y-x.^2).^2+(1-x).^2;
+    r1 = (y-x.^2).^2+(1-x).^2;
+    w = r .* z;
+    w2 = z - r1;
+    w6 = w + w2;
+    saida = -w6;
 endfunction
+
+
+//function saida = fa(xn)
+//    x = xn(1);
+//    y = xn(2);
+//    //z = xn(1) .^2 + xn(2) .^ 2;
+//    z = (x - 2).^2 + (y - 8).^2 + 7;
+//    saida = -z;
+//endfunction
 
 // ################################################################# //
 
@@ -126,6 +128,22 @@ for i = 1:NUM_GER
                 break;
             end
         end    
+
+
+//        //Faz a seleção por torneio, com 2 indivíduos.
+//        inds =  1 + floor(rand(2, 1)*TAM_POP);
+//        if aptidao(inds(1)) > aptidao(inds(2)) then
+//            k1 = inds(1);
+//        else
+//            k1 = inds(2);
+//        end
+//        
+//        inds =  1 + floor(rand(2, 1)*TAM_POP);
+//        if aptidao(inds(1)) > aptidao(inds(2)) then
+//            k2 = inds(1);
+//        else
+//            k2 = inds(2);
+//        end
         
         // Realiza o cruzamento dos dois indivíduos selecionados 
         // com base na taxa de cruzamento.
@@ -148,7 +166,6 @@ for i = 1:NUM_GER
                 filho2(1, d) = pop_bin(k2, d);
             end
         end
-        
         
         // Adiciona os novos filhos na nova população. 
         nova_pop_bin(j,:) = filho1;
@@ -182,17 +199,20 @@ for i = 1:NUM_GER
     
     // Gera a população de decimais.
     pop_dec = bin2dec(pop_bin)
-
+    
 end
 
 // Obtém o melhor indivíduo.
 pop_norm = L_MIN + GANHO_NORM * pop_dec;
 //melhores_norm = X_MIN + GANHO_NORM * melhores;
-aptidao = fa(pop_norm);
+for j=1:TAM_POP
+    aptidao(j) = fa(pop_norm(j,:));
+end
 [_, indice] = max(aptidao);
+resposta = pop_norm(indice, :);
 pop_norm = L_MIN + GANHO_NORM * pop_dec;
 disp(pop_norm);
-disp(['Resposta: ', string(pop_norm(indice, :))]);
+disp(['Resposta: ', string(resposta)]);
 
 //erros = abs(fa(melhores_norm) - RESULTADO);
 clf();
@@ -200,7 +220,7 @@ plot([1:NUM_GER]', melhores, '*-');
 plot([1:NUM_GER]', medias, 'go-');
 legend(['Melhor aptidão'; 'Média das aptidoẽs']);
 xlabel("Gerações");
-ylabel("Indivíduos");
+ylabel("Aptidão");
 title("Convergência da resposta");
 //grafico = gca() ;
 //grafico.box="on";  
