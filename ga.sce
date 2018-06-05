@@ -6,12 +6,12 @@ clear;
 // Parâmetros do AG
 TAM_POP = 50;
 NUM_GER = 50;
-TAXA_CROSS = 1.0;
-TAXA_MUT = 0.01;
+TAXA_CROSS = 0.8;
+TAXA_MUT = 0.04;
 L_MIN = -500;
 L_MAX = 500;
-QNT_BITS = 32;
-ELITISMO = 0.05;
+QNT_BITS = 16;
+ELITISMO = 0.02;
 DIMENSOES = 2;
 
 //RESPOSTA = X perto de 440 e Y perto de -500.
@@ -213,6 +213,7 @@ resposta = pop_norm(indice, :);
 pop_norm = L_MIN + GANHO_NORM * pop_dec;
 disp(pop_norm);
 disp(['Resposta: ', string(resposta)]);
+
 
 //erros = abs(fa(melhores_norm) - RESULTADO);
 clf();
