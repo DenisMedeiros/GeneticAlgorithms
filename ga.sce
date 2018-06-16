@@ -4,8 +4,8 @@
 clear;
 
 // Parâmetros do AG
-TAM_POP = 50;
-NUM_GER = 50;
+TAM_POP = 40;
+NUM_GER = 30;
 TAXA_CROSS = 0.8;
 TAXA_MUT = 0.04;
 L_MIN = -500;
@@ -14,34 +14,8 @@ QNT_BITS = 16;
 ELITISMO = 0.02;
 DIMENSOES = 2;
 
+//rand('seed', 2330099)
 //RESPOSTA = X perto de 440 e Y perto de -500.
-
-// Função de Avaliação
-//function y = fa(xn)
-//    y = -(xn.^2 - 3*xn +4);
-//endfunction
-
-//function y = fa(xn)
-//    y = -(xn(1).^2 + xn(2).^2);
-//endfunction
-
-function plotar()
-    [x, y] = meshgrid(-500:5:500,-500:5:500);
-    z = -x.*sin(sqrt(abs(x)))-y.*sin(sqrt(abs(y)));
-    x = x/250;
-    y = y/250;
-    // r: Rosenbrock's function
-    r = 100*(y-x.^2).^2+(1-x).^2;
-    r1 = (y-x.^2).^2+(1-x).^2;
-
-    w = r .* z;
-    w2 = z - r1;
-    w6 = w + w2;
-    x = x * 250;
-    y = y * 250;
-    figure;
-    surf(x, y, w6);
-endfunction
 
 // Função de avaliação.
 function saida = fa(xn)
@@ -57,15 +31,6 @@ function saida = fa(xn)
     w6 = w + w2;
     saida = -w6;
 endfunction
-
-
-//function saida = fa(xn)
-//    x = xn(1);
-//    y = xn(2);
-//    //z = xn(1) .^2 + xn(2) .^ 2;
-//    z = (x - 2).^2 + (y - 8).^2 + 7;
-//    saida = -z;
-//endfunction
 
 // ################################################################# //
 
@@ -88,13 +53,24 @@ aptidao = zeros(TAM_POP, 1);
 melhores  = zeros(NUM_GER, 1);
 media  = zeros(NUM_GER, 1);
 
+// Para o relatório
+primeira = L_MIN + GANHO_NORM * pop_dec;;
+intermediaria1 = primeira;
+intermediaria2 = primeira;
+ultima = primeira;
 
 // Inicia o processamento das gerações.
 for i = 1:NUM_GER
     
     // Normaliza os indivíduos.
     pop_norm = L_MIN + GANHO_NORM * pop_dec;
-        
+    
+    if i == 3 then
+        intermediaria1 = pop_norm;
+    elseif i == 10 then
+        intermediaria2 = pop_norm; 
+    end
+    
     // Avalia os indivíduos.
     for j=1:TAM_POP
         aptidao(j) = fa(pop_norm(j,:));
@@ -204,25 +180,95 @@ end
 
 // Obtém o melhor indivíduo.
 pop_norm = L_MIN + GANHO_NORM * pop_dec;
-//melhores_norm = X_MIN + GANHO_NORM * melhores;
+ultima = pop_norm;
+
 for j=1:TAM_POP
     aptidao(j) = fa(pop_norm(j,:));
 end
 [_, indice] = max(aptidao);
 resposta = pop_norm(indice, :);
-pop_norm = L_MIN + GANHO_NORM * pop_dec;
-disp(pop_norm);
+
+//disp(pop_norm);
 disp(['Resposta: ', string(resposta)]);
 
 
 //erros = abs(fa(melhores_norm) - RESULTADO);
-clf();
-plot([1:NUM_GER]', melhores, '*-');
-plot([1:NUM_GER]', medias, 'go-');
-legend(['Melhor aptidão'; 'Média das aptidoẽs']);
-xlabel("Gerações");
-ylabel("Aptidão");
-title("Convergência da resposta");
-//grafico = gca() ;
-//grafico.box="on";  
-//grafico.data_bounds=[0, X_MIN; NUM_GER, X_MAX];  //define the bounds  
+
+// Gráfico das aptidões.
+function _ = plotar_aptidoes()
+    clf();
+    plot([1:NUM_GER]', melhores, '*-');
+    plot([1:NUM_GER]', medias, 'go-');
+    legend(['Melhor aptidão'; 'Média das aptidoẽs']);
+    xlabel("Gerações");
+    ylabel("Aptidão");
+    title("Convergência da resposta");
+    //grafico = gca() ;
+    //grafico.box="on";  
+    //grafico.data_bounds=[0, X_MIN; NUM_GER, X_MAX];  //define the bounds  
+endfunction
+
+
+// Gráficos das populações.
+function _ = plotar_populacoes()
+    scf();
+    plot(primeira(:,1), primeira(:,2), 'ob');
+    legend(['Indivíduos']);
+    xlabel("X");
+    ylabel("Y");
+    title("População inicial");
+    grafico = gca() ;
+    grafico.box = "on";  
+    grafico.data_bounds=[-500, -500; 500, 500]; 
+    
+    scf();
+    plot(intermediaria1(:,1), intermediaria1(:,2), 'or');
+    legend(['Indivíduos']);
+    xlabel("X");
+    ylabel("Y");
+    title("População intermediária (após 3 gerações)");
+    grafico = gca() ;
+    grafico.box = "on";  
+    grafico.data_bounds=[-500, -500; 500, 500];     
+    
+    scf();
+    plot(intermediaria2(:,1), intermediaria2(:,2), 'om');
+    legend(['Indivíduos']);
+    xlabel("X");
+    ylabel("Y");
+    title("População intermediária (após 10 gerações)");
+    grafico = gca() ;
+    grafico.box = "on";  
+    grafico.data_bounds=[-500, -500; 500, 500]; 
+    
+    scf();
+    plot(ultima(:,1), ultima(:,2), 'og');
+    legend(['Indivíduos']);
+    xlabel("X");
+    ylabel("Y");
+    title("População final");   
+    grafico = gca() ;
+    grafico.box = "on";  
+    grafico.data_bounds=[-500, -500; 500, 500]; 
+    
+endfunction
+
+// Gráfico da função de avaliação.
+function plotar_fa()
+    [x, y] = meshgrid(-500:5:500,-500:5:500);
+    z = -x.*sin(sqrt(abs(x)))-y.*sin(sqrt(abs(y)));
+    x = x/250;
+    y = y/250;
+    // r: Rosenbrock's function
+    r = 100*(y-x.^2).^2+(1-x).^2;
+    r1 = (y-x.^2).^2+(1-x).^2;
+
+    w = r .* z;
+    w2 = z - r1;
+    w6 = w + w2;
+    x = x * 250;
+    y = y * 250;
+    surf(x, y, w6);
+endfunction
+
+
